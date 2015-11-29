@@ -47,9 +47,9 @@ def getValidMoves(playerpos):
 	movdist = 1000
 	directions = 8
 	movelist = [playerpos]
-	for deg in range(0, 360, 360/directions):
-		x = math.floor(playerpos + math.sin(math.radians(deg))*movdist)
-		y = math.floor(playerpos - math.cos(math.radians(deg))*movdist)
+	for deg in range(0, 360, 360//directions):
+		x = math.floor(playerpos[0] + math.sin(math.radians(deg))*movdist)
+		y = math.floor(playerpos[1] - math.cos(math.radians(deg))*movdist)
 		if x < 0:
 			x = 0
 		if x > 16000:
@@ -63,18 +63,22 @@ def getValidMoves(playerpos):
 
 
 def greedyMove(playerpos, humanpos, zombiepos, depth):
+	# print(str(depth), file = sys.stderr)
 	if depth == 0:
 		return ([], 0)
 	moves = getValidMoves(playerpos)  # gets a list of positions
 	best = -1
 	bestmove = []
+	# print(moves, file = sys.stderr)
 	for move in moves:
 		newhumanpos, newzombiepos = makeMove(move, humanpos, zombiepos)
 		curscore = getScore(move, humanpos, zombiepos)
 		moveseq, score = greedyMove(move, newhumanpos, newzombiepos, depth-1)
 		if (curscore + score) > best:
 			best = curscore + score
-			bestmove = moveseq.insert(0, move)
+			moveseq.insert(0, move)
+			bestmove = moveseq
+	print(str(bestmove) + " " + str(best), file = sys.stderr)
 	return (bestmove, best)
 
 
@@ -112,7 +116,7 @@ while 1:
 		zombiepos.append([zombie_id, zombie_xnext, zombie_ynext])
 	playerpos = [x, y]
 	if len(movelist) == 0:
-		movelist = greedyMove(playerpos, humanpos, zombiepos, maxd)
+		movelist, score = greedyMove(playerpos, humanpos, zombiepos, maxd)
 
 	# Write an action using print
 	# To debug: print("Debug messages...", file=sys.stderr)
