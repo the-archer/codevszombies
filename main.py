@@ -1,5 +1,6 @@
 import sys
 import math
+import copy
 
 # Save humans, destroy zombies!
 
@@ -29,16 +30,18 @@ def getScore(playerpos, humanpos, zombiepos):
 
 
 def getNearestHuman(zombie, humanpos, playerpos):
+	playerpos = copy.deepcopy(playerpos)
 	dist = float("inf")
 	closest = []
 	for human in humanpos:
-		d = getDistance(human, zombie[1:])
+		d = getDistance(human[1:], zombie[1:])
 		if d < dist:
 			closest = human
 			dist = d
 	d = getDistance(playerpos, zombie[1:])
 	if d < dist:
 		closest = playerpos
+		closest.insert(0, -1)
 		dist = d
 	return closest
 
@@ -60,6 +63,7 @@ def getValidMoves(playerpos):
 			y = 9000
 		movelist.append([x, y])
 	return movelist
+
 
 
 def greedyMove(playerpos, humanpos, zombiepos, depth):
@@ -89,18 +93,18 @@ def makeMove(playerpos, humanpos, zombiepos):
 	for zombie in zombiepos:
 		if zombie[0] not in zinrange:
 			for human in humanpos:
-				if human[0] == zombie[1] and human[1] == zombie[2]:
+				if human[1] == zombie[1] and human[2] == zombie[2]:
 					continue
 				else:
 					newhumanpos.append(human)
 	for zombie in zombiepos:
 		if zombie[0] not in zinrange:
-			newpos = getNearestHuman(zombie, newhumanpos, playerpos)
+			newpos = getNearestHuman(zombie, newhumanpos, playerpos)[1:]
 			newzombiepos.append([zombie[0], newpos[0], newpos[1]])
 	return (newhumanpos, newzombiepos)
 
 # game loop
-maxd = 3
+maxd = 2
 movelist = []
 while 1:
 	humanpos = []
@@ -109,7 +113,7 @@ while 1:
 	human_count = int(input())
 	for i in range(human_count):
 		human_id, human_x, human_y = [int(j) for j in input().split()]
-		humanpos.append([human_x, human_y])
+		humanpos.append([human_id, human_x, human_y])
 	zombie_count = int(input())
 	for i in range(zombie_count):
 		zombie_id, zombie_x, zombie_y, zombie_xnext, zombie_ynext = [int(j) for j in input().split()]
